@@ -31,7 +31,6 @@ static int		ft_del_list_elem(t_line **list, const int fd)
 	ft_strdel(&head->str);
 	free(head);
 	return (1);
-
 }
 
 static t_line	*ft_get_curr(t_line **list, const int fd)
