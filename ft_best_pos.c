@@ -33,14 +33,26 @@ static void	ft_choose_best(t_filler *prm, int *imap, char *token, int summ)
 			if (j >= prm->tk_cols && token[j] == '*')
 				curr_summ += imap[CH_MAP_POS];
 		}
-		if (curr_summ < summ)
-		{
-			summ = curr_summ;
+		if (curr_summ < summ && (summ = curr_summ) == curr_summ)
 			best = i;
-		}
 	}
 	prm->res_y = (prm->poss)[best] / CL;
 	prm->res_x = (prm->poss)[best] % CL;
+}
+
+static int	ft_check_pos(int i, int **imap, t_filler *prm, int find)
+{
+	if ((*imap)[i] == 0 && (((i - CL - 1) % CL != CL - 1 && i - CL - 1
+			>= 0 && (*imap)[i - CL - 1] == find) || (i - CL >= 0 &&
+			(*imap)[i - CL] == find) || ((i - CL + 1) % CL != 0 && i - CL + 1
+			>= 0 && (*imap)[i - CL + 1] == find) || ((i - 1) % CL != CL - 1 &&
+			i - 1 >= 0 && (*imap)[i - 1] == find) || ((i + 1) % CL != 0 && i + 1
+			< RW * CL && (*imap)[i + 1] == find) || ((i + CL - 1) % CL != CL - 1
+			&& i + CL - 1 < RW * CL && (*imap)[i + CL - 1] == find) || (i + CL <
+			RW * CL && (*imap)[i + CL] == find) || ((i + CL + 1) % CL != 0 && i
+			+ CL + 1 < RW * CL && (*imap)[i + CL + 1] == find)))
+		return (1);
+	return (0);
 }
 
 static void	ft_int_map_maker(int **imap, t_filler *prm, int *empty, int size)
@@ -57,15 +69,7 @@ static void	ft_int_map_maker(int **imap, t_filler *prm, int *empty, int size)
 		count = 0;
 		while (++i < size)
 		{
-			if ((*imap)[i] == 0 && (((i - CL - 1) % CL != CL - 1 && i - CL - 1
-			>= 0 && (*imap)[i - CL - 1] == find) || (i - CL >= 0 &&
-			(*imap)[i - CL] == find) || ((i - CL + 1) % CL != 0 && i - CL + 1
-			>= 0 && (*imap)[i - CL + 1] == find) || ((i - 1) % CL != CL - 1 &&
-			i - 1 >= 0 && (*imap)[i - 1] == find) || ((i + 1) % CL != 0 && i + 1
-			< size && (*imap)[i + 1] == find) || ((i + CL - 1) % CL != CL - 1 &&
-			i + CL - 1 < size && (*imap)[i + CL - 1] == find) || (i + CL < size
-			&& (*imap)[i + CL] == find) || ((i + CL + 1) % CL != 0 && i + CL + 1
-			< size && (*imap)[i + CL + 1] == find)))
+			if (ft_check_pos(i, imap, prm, find))
 			{
 				(*imap)[i] = find + 1;
 				(*empty)--;
@@ -97,25 +101,17 @@ static void	ft_int_map_prepare(int **imap, char *map, t_filler *prm, int *empty)
 	}
 }
 
-static int	*ft_make_int_map(char *map, t_filler *prm)
+void		ft_best_pos(t_filler *prm, char *map, char *token)
 {
-	int		*res;
+	int		*int_map;
 	int		size;
 	int		empty;
 
 	size = RW * CL;
 	empty = RW * CL;
-	res = (int*)malloc(sizeof(int) * size);
-	ft_bzero(res, sizeof(int) * size);
-	ft_int_map_prepare(&res, map, prm, &empty);
-	ft_int_map_maker(&res, prm, &empty, CL * RW);
-	return (res);
-}
-
-void		ft_best_pos(t_filler *prm, char *map, char *token)
-{
-	int		*int_map;
-
-	int_map = ft_make_int_map(map, prm);
+	int_map = (int*)malloc(sizeof(int) * size);
+	ft_bzero(int_map, sizeof(int) * size);
+	ft_int_map_prepare(&int_map, map, prm, &empty);
+	ft_int_map_maker(&int_map, prm, &empty, CL * RW);
 	ft_choose_best(prm, int_map, token, INT_MAX);
 }
